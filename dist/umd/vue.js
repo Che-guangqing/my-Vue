@@ -47,42 +47,62 @@
     return _typeof(data) === 'object' && data !== null;
   } // 定义一个不可枚举但是可读的属性
 
+  function def(data, key, value) {
+    Object.defineProperty(data, key, {
+      enumerable: false,
+      //不可枚举
+      configurable: false,
+      //不能被修改
+      value: value
+    });
+  }
+
   // 需要重写能够改变原数组的方法 push shift unshift pop reverse sort splice
+  // slice不会改变原数组不需要劫持
   // 先把数组原来的方法保存
-  var oldArraryMethods = Array.prototype; // value.__proto__ = arraryMethods
+  var oldArraryMethods = Array.prototype; // arr.__proto__ = arraryMethods 用户使用
   // arraryMethods.__proto__ = oldArraryMethods
+  // 使用方法时：原型链查找，先查找重写的，在重写的方法中找不到，会继续向上查找
 
   var arraryMethods = Object.create(oldArraryMethods);
   var methods = ['push', 'shift', 'unshift', 'pop', 'reverse', 'sort', 'splice'];
   methods.forEach(function (methods) {
     arraryMethods[methods] = function () {
-      var _oldArraryMethods$met;
-
-      console.log('调用了方法'); // 我调用重写的数组方法 这个方法调用原生的数组方法   AOP切片编程
+      console.log("\u8C03\u7528\u4E86".concat(methods, "\u65B9\u6CD5")); // 我调用重写的数组方法 这个方法调用原生的数组方法   AOP切片编程
+      // 这里的this，就是谁调用的方法就指向谁，也就是Observe中的value调用的
 
       for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
         args[_key] = arguments[_key];
       }
 
-      var result = (_oldArraryMethods$met = oldArraryMethods[methods]).apply.apply(_oldArraryMethods$met, [this].concat(args)); // push unshif添加的元素可能还是对象 
+      var result = oldArraryMethods[methods].apply(this, args); // push unshif方法，添加的元素可能还是对象，要继续监听
+      //当前用户插入的元素
 
-
-      var inserted; //当前用户插入的元素
-
-      var ob = this.__ob__;
-      console.log(ob, 'arrrr');
+      var inserted;
+      var ob = this.__ob__; // console.log(ob, 'arrrr')
 
       switch (methods) {
         case 'push':
         case 'unshift':
-          inserted = args;
+          inserted = args; // arr.push({a:1},{b:2})
+          // inserted = [{a:1},{b:2}]
+
           break;
 
         case 'splice':
-          //操作的数组 操作的索引 新增的属性 arr.splice(0,1,'b')
+          //有删除、修改、新增功能 (操作的数组元素,操作的索引,新增的属性) arr.splice(0,1,'b')
+          // 对于splice新增的属性也要看
           inserted = args.slice(2);
           break;
-      } // 添加了值
+      } // console.log(inserted, '当前用户插入的元素')
+      // 添加了值
+
+
+      if (inserted) {
+        // 观测inserted数组
+        // 要使用index.js中循环数组元素监测的方法
+        ob.observeArray(inserted); //将新增属性继续观测
+      }
 
       return result;
     };
@@ -92,21 +112,29 @@
     function Observe(value) {
       _classCallCheck(this, Observe);
 
-      this.walk(value); // console.log(value)
+      // console.log(value)
       // vue如果数据层次过多 则递归解析对象中的属性 ，依次添加set get方法
-      // value.__ob__ = this  //给每一个监控过的对象都添加一个__ob__ 属性  但是这样写会一直递归调用observeArray方法
-      // def(value,'__ob__ ', this)
-      // if(Array.isArray(value)) {
-      //     // 如果属性是数组,则不使用数组的索引添加get set进行观察 性能不好 
-      //     // 如果是unishit push等方法让数组发生变化 则重写这些方法
-      //     value.__proto__ = arraryMethods
-      //     // 如果数组里面是对象我再进行监测
-      //     this.observeArray(value)
-      // }else {
-      //     //对对象进行观测
-      //     this.walk(value)
-      // }
-    } //数组
+      // 给每一个监控过的对象都添加一个__ob__属性，但是这样写会一直递归调用observeArray方法
+      // value.__ob__ = this
+      // Object.defineProperty(value, '__ob__', {
+      //     enumerable:false,   //不可枚举
+      //     configurable:false, //不能被修改
+      //     value: this
+      // })
+      def(value, '__ob__', this);
+
+      if (Array.isArray(value)) {
+        // 如果属性是数组,则不使用数组的索引添加get set进行观察、性能不好 
+        // push shift unshift pop reverse sort splice这些方法也能使原数组发生变化
+        // 所以对于这些方法让数组发生变化，也需要知道他变了去通知视图改变，则重写这些方法
+        value.__proto__ = arraryMethods; // 如果数组里面是对象[{}]我再进行监测
+
+        this.observeArray(value);
+      } else {
+        //对对象进行观测
+        this.walk(value);
+      }
+    } //遍历数组
 
 
     _createClass(Observe, [{
@@ -116,7 +144,7 @@
           // [{}] 监控了数组里面的对象
           observe(value[i]);
         }
-      } //对象
+      } //遍历对象
 
     }, {
       key: "walk",

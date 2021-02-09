@@ -4,31 +4,40 @@ import {arraryMethods} from './array'
 // 观测数据
 class Observe {
     constructor(value) {
-        this.walk(value)
         // console.log(value)
         // vue如果数据层次过多 则递归解析对象中的属性 ，依次添加set get方法
-        // value.__ob__ = this  //给每一个监控过的对象都添加一个__ob__ 属性  但是这样写会一直递归调用observeArray方法
-        // def(value,'__ob__ ', this)
-        // if(Array.isArray(value)) {
-        //     // 如果属性是数组,则不使用数组的索引添加get set进行观察 性能不好 
-        //     // 如果是unishit push等方法让数组发生变化 则重写这些方法
-        //     value.__proto__ = arraryMethods
+
+        // 给每一个监控过的对象都添加一个__ob__属性，但是这样写会一直递归调用observeArray方法
+        // value.__ob__ = this
+
+        // Object.defineProperty(value, '__ob__', {
+        //     enumerable:false,   //不可枚举
+        //     configurable:false, //不能被修改
+        //     value: this
+        // })
+        def(value,'__ob__',this)
+
+        if(Array.isArray(value)) {
+            // 如果属性是数组,则不使用数组的索引添加get set进行观察、性能不好 
+            // push shift unshift pop reverse sort splice这些方法也能使原数组发生变化
+            // 所以对于这些方法让数组发生变化，也需要知道他变了去通知视图改变，则重写这些方法
+            value.__proto__ = arraryMethods
             
-        //     // 如果数组里面是对象我再进行监测
-        //     this.observeArray(value)
-        // }else {
-        //     //对对象进行观测
-        //     this.walk(value)
-        // }
+            // 如果数组里面是对象[{}]我再进行监测
+            this.observeArray(value)
+        }else {
+            //对对象进行观测
+            this.walk(value)
+        }
     }
-    //数组
+    //遍历数组
     observeArray(value) {
         for(let i = 0 ;i < value.length; i++) {
             // [{}] 监控了数组里面的对象
             observe(value[i])
         }
     }
-    //对象
+    //遍历对象
     walk(data) {
         let keys = Object.keys(data) // [name,age,address]
         keys.forEach(key => {

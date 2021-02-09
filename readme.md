@@ -13,7 +13,7 @@
 &emsp;&emsp;|--**index.html**
 **|-- src**
 &emsp;&emsp;|-- **observe** : <small>*响应式, 在state.js文件中 ‘initData(vm)实现data初始化’，此文件实现data的双向绑定<Object.definedProperty():给属性添加get、set方法>*</small>
-&emsp;&emsp;&emsp;&emsp;|-- **array.js** :  <small>*重写能够改变原数组的方法*</small>
+&emsp;&emsp;&emsp;&emsp;|-- **array.js** :  <small>*重写能够改变原数组的方法 push shift unshift pop reverse sort splice*</small>
 &emsp;&emsp;&emsp;&emsp;|-- **index.js** :  <small>*Observe观测数据，对对象进行观测*</small>
 &emsp;&emsp;|-- **util**:
 &emsp;&emsp;&emsp;&emsp;|-- **index.js** :<small>*工具方法*</small>
@@ -31,4 +31,4 @@
 > 当你修改数组的长度时，例如： vm.items.length = newLength
 
   - 既然数组是可以被监听的，那为什么vue不能检测'利用索引直接设置一个项'导致的数组元素改变？
-  - 说是影响性能： Object.defineProperty()也能监听数组，影响性能是指，比如用索引去修改、添加、删除一个数组的项，是从数组这个数据结构的特点来说，数组会在存中开辟一块连续的空间，所以通过索引修改数组中间的值会导致后面的值都会向前或向后移动吗
+  - 说是影响性能： Object.defineProperty()也能监听数组，影响性能是指，比如用索引去修改、添加、删除一个数组的项，是从数组这个数据结构的特点来说，数组在内存中是连续存储的，所以通过索引操作数组中间的值会导致后面的索引都会向前或向后移动吗
