@@ -6,31 +6,31 @@
     <title>Document</title>
 </head>
 <body>
-    <div id="#app">
-        <div></div>
-        <span></span>
+    <div id="app">
+        <h1>{{name}}</h1>
+        <h3>{{age}}</h3>
     </div>
     <script src="/dist/umd/vue.js"></script>
     <script>
         let vm = new Vue({
-            el: '#app',
+            el:'#app',
             data(){ 
                 return {
-                    // name: 'cc',
-                    // age: 18,
-                    address: {
-                        number: 1,
-                        name: '西安'
-                    },
-                    class: [{name:'math',teacher:'aa'},{name:'english',teacher:'bb'}]
+                    name: 'cc',
+                    age: 18,
+                    // address: {
+                    //     number: 1,
+                    //     name: '西安'
+                    // },
+                    // class: [{name:'math',teacher:'aa'},{name:'english',teacher:'bb'}]
                 }
             },
         })
         // console.log(vm._data.class)
         // vm._data.address = {a:2}
         // 看data中每个属性是否都添加了get set
-        vm._data.class.push('1',{a:1},{b:2})
-        console.log(vm._data)
+        // vm._data.class.push('1',{a:1},{b:2})
+        // console.log(vm._data)
         // vm._data.address = { name: 'ff' }
         // vm._data.class.push({title:'ddd'})
         // console.log(vm._data, 'kkk')
