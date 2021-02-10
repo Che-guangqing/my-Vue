@@ -13,6 +13,8 @@
 &emsp;&emsp;|--**index.html**
 **|-- src**
 &emsp;&emsp;|-- **compiler**: <small>*模板编译*</small>
+&emsp;&emsp;&emsp;&emsp;|-- **index.js** :<small>*将AST语法树生成最终的render函数*</small>
+&emsp;&emsp;&emsp;&emsp;|-- **parserHtml.js** :<small>*匹配html字符串生成AST语法树*</small>
 &emsp;&emsp;|-- **observe** : <small>*响应式, 在state.js文件中 ‘initData(vm)实现data初始化’，此文件实现data的双向绑定<Object.definedProperty():给属性添加get、set方法>*</small>
 &emsp;&emsp;&emsp;&emsp;|-- **array.js** :  <small>*重写能够改变原数组的方法 push shift unshift pop reverse sort splice*</small>
 &emsp;&emsp;&emsp;&emsp;|-- **index.js** :  <small>*Observe观测数据，对对象进行观测*</small>
