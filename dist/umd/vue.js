@@ -235,8 +235,6 @@
     observe(data); //响应式原理
   }
 
-  // ast语法树: 用对象来描述编译原生语法
-  // 区别于虚拟dom: 用对象来描述dom节点
   // ?:  匹配不捕获
   var attribute = /^\s*([^\s"'<>\/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/; // console.log(`aaa = '123'`.match(attribute))
 
@@ -249,18 +247,71 @@
   var startTagClose = /^\s*(\/?)>/; // 匹配标签结束的 <div />
 
   var endTag = new RegExp("^<\\/".concat(qnameCapture, "[^>]*>")); // </xxx> 标签结尾
+  // ast语法树树根
+
+  var root = null; // 保存当前标签的父级
+
+  var currentParent; // 每次匹配到后入栈，当遇到结束标签查看与上一个是否匹配，匹配两个一起出栈 [div, p, /p] p结束 => [div, /div] => [] div结束, 若最后栈中还有则不符合规范 
+
+  var stack = []; // 标签元素
+
+  var ELEMENT_TYPE = 1; // 文本元素
+
+  var TEXT_TYPE = 3; // 创建AST树
+
+  function createASTElement(tagName, attrs) {
+    return {
+      tag: tagName,
+      type: ELEMENT_TYPE,
+      children: [],
+      attrs: attrs,
+      parent: null
+    };
+  }
 
   function start(tagName, attrs) {
-    console.log('开始标签:', tagName, '属性是:', attrs);
+    // console.log('开始标签:',tagName, '属性是:',attrs)
+    // 遇到开始标签，就创建一个ast元素
+    var element = createASTElement(tagName, attrs);
+
+    if (!root) {
+      root = element;
+    } // 把当前元素标记成父ast树
+
+
+    currentParent = element; // 将当前标签存入栈中
+
+    stack.push(element);
   } // 空格字符或者文本
 
 
   function chars(text) {
-    console.log('文本是:', text);
-  }
+    // console.log('文本是:',text)
+    // 空
+    text = text.replace(/\s/g, '');
+
+    if (text) {
+      currentParent.children.push({
+        text: text,
+        type: TEXT_TYPE
+      });
+    }
+  } // <div><p>  [div,p]
+
 
   function end(tagName) {
-    console.log('结尾标签:', tagName);
+    // console.log('结尾标签:',tagName)
+    // 比较栈中最后一个元素和当前元素是否匹配
+    // 得到的是ast对象
+    var element = stack.pop(); // 标识当前这个p是属于这个div的儿子的
+
+    currentParent = stack[stack.length - 1];
+
+    if (currentParent) {
+      // 有父级
+      element.parent = currentParent;
+      currentParent.children.push(element); //实现树的父子关系
+    }
   } // 匹配字符串 html => ast树
 
 
@@ -275,6 +326,7 @@
         var startTagMatch = parseStartTag(); // 若匹配到开始
 
         if (startTagMatch) {
+          // （1）解析开始标签
           start(startTagMatch.tagName, startTagMatch.attrs); // console.log(startTagMatch)
           // 如果开始标签匹配完毕，继续下一次匹配
 
@@ -285,7 +337,8 @@
         var endTagMatch = html.match(endTag); // 若匹配到结尾
 
         if (endTagMatch) {
-          advance(endTagMatch[0].length);
+          advance(endTagMatch[0].length); // （3）解析结束标签
+
           end(endTagMatch[1]);
           continue;
         }
@@ -299,7 +352,8 @@
       }
 
       if (text) {
-        advance(text.length);
+        advance(text.length); // （2）解析文本标签
+
         chars(text);
       }
     } // <div>jfck</div>
@@ -344,12 +398,16 @@
 
       }
     }
-  } // 把html标签变成ast语法树
 
+    return root;
+  }
+
+  // ast语法树: 用对象来描述编译原生语法
 
   function compileToFunction(template) {
     // console.log(template)
-    var root = parseHTML(template); // render函数返回的是虚拟dom
+    var root = parseHTML(template);
+    console.log(root); // render函数返回的是虚拟dom
 
     return function render() {};
   }
