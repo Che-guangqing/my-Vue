@@ -111,6 +111,18 @@
       //不能被修改
       value: value
     });
+  } // 代理方法
+
+  function proxy(vm, source, key) {
+    Object.defineProperty(vm, key, {
+      get: function get() {
+        // 去vm.name取值，代理到vm._data.name
+        return vm[source][key];
+      },
+      set: function set(newValue) {
+        vm[source][key] = newValue;
+      }
+    });
   }
 
   // 需要重写能够改变原数组的方法 push shift unshift pop reverse sort splice
@@ -287,6 +299,11 @@
     data = vm._data = typeof data === 'function' ? data.call(vm) : data; // console.log(data) //对象data
     // 对象劫持  用户改变了数据 我可以收到通知进行刷新页面（数据可以驱动视图变化）
     // Object. ()  给属性添加get、set方法
+    // 可以直接vm.属性、方法进行取值 代理
+
+    for (var key in data) {
+      proxy(vm, '_data', key);
+    }
 
     observe(data); //响应式原理
   }
@@ -569,12 +586,13 @@
 
     var renderFn = new Function("with(this) {return ".concat(code, "}")); // 相当于
     // function () {
+    // renderFn.call(谁),this就是谁
     //     with(this) {
     //         return _c('div',{id:app}, _c("p",udefined,_v('hello' + _s(name) )),  _v('hello))
     //     }
     // }
+    // console.log(renderFn)
 
-    console.log(renderFn);
     return renderFn;
   } // 先把html字符串转成AST语法树，再把ast语法树转成render函数
 
@@ -644,6 +662,8 @@
       } // 传了render函数用传的，没传用if里面编译后的
       // options.render
 
+
+      console.log(options.render);
     };
   }
   /*

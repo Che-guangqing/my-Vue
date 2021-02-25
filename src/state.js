@@ -1,4 +1,5 @@
 import {observe} from './observe/index'
+import {proxy} from './util/index'
 export function initState(vm) {
     const opts = vm.$options
     // vue的数据来源 属性 方法 数据 计算属性 watch
@@ -20,6 +21,7 @@ export function initState(vm) {
 }
 function initProps() {}
 function initMethods() {}
+
 function initData(vm) {
     // console.log(vm.$options.data)
     // 数据初始化
@@ -32,6 +34,12 @@ function initData(vm) {
 
     // 对象劫持  用户改变了数据 我可以收到通知进行刷新页面（数据可以驱动视图变化）
     // Object. ()  给属性添加get、set方法
+
+    // 可以直接vm.属性、方法进行取值 代理
+    for (let key in data) {
+        proxy(vm, '_data', key) 
+    }
+
     observe(data) //响应式原理
 }
 function initComputed() {}

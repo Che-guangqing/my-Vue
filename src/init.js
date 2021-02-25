@@ -43,6 +43,7 @@ export function initMixin(Vue) {
         }
         // 传了render函数用传的，没传用if里面编译后的
         // options.render
+        console.log(options.render)
     }
 }
 

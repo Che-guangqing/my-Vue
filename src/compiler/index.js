@@ -112,7 +112,7 @@ export function compileToFunction(template) {
     //         return _c('div',{id:app}, _c("p",udefined,_v('hello' + _s(name) )),  _v('hello))
     //     }
     // }
-    console.log(renderFn)
+    // console.log(renderFn)
     return renderFn
 }
 

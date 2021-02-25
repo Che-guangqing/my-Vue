@@ -11,3 +11,16 @@ export function def(data,key,value) {
         value
     })
 }
+
+// 代理方法
+export function proxy(vm, source, key) {
+    Object.defineProperty(vm,key, {
+        get() {
+            // 去vm.name取值，代理到vm._data.name
+            return vm[source][key]
+        },
+        set(newValue) {
+            vm[source][key] = newValue
+        }
+    })
+}
