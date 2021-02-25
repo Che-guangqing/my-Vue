@@ -624,6 +624,34 @@
   */
   // 拼接字符串 + with + new Function
 
+  function lifecycleMixin(Vue) {
+    Vue.protrotype._update = function (vnode) {// 拿到虚拟节点vnode，创建出真实dom 更新视图
+    };
+  } // 挂载组件
+
+  function mountComponent(vm, el) {
+    var options = vm.$options;
+    vm.$el = el; //真实的dom元素
+    // console.log(options, vm.$el)
+
+    /* 
+    Watcher就是用来渲染的
+    vm._render 通过解析的render方法 渲染出虚拟dom
+    vm._update 通过虚拟dom 创建真实dom
+    */
+    // 渲染页面
+
+    var updateComponent = function updateComponent() {
+      // 无论是渲染还是更新都会调用此方法
+      // 返回的是虚拟dom => 生成真实dom
+      vm._update(vm._render());
+    }; // 渲染watcher 每个组件都有一个watcher,响应式原理，每次数据变调用updateComponent方法更新视图
+    //         实例， 更新组件方法， 回调
+
+
+    new Watcher(vm, updateComponent, function () {}, true); // true表示他是一个渲染watch
+  }
+
   function initMixin(Vue) {
     // 初始化流程
     Vue.prototype._init = function (options) {
@@ -661,9 +689,10 @@
         options.render = render;
       } // 传了render函数用传的，没传用if里面编译后的
       // options.render
+      // 渲染当前的组件 挂在这个组件
 
 
-      console.log(options.render);
+      mountComponent(vm, el);
     };
   }
   /*
@@ -677,6 +706,10 @@
   }
   */
 
+  function renderMixin(Vue) {
+    Vue.prototype._render = function () {};
+  }
+
   function Vue(options) {
     // vue初始化操作
     this._init(options);
@@ -684,7 +717,10 @@
   // 导入init方法 
 
 
-  initMixin(Vue);
+  initMixin(Vue); // 渲染虚拟dom
+
+  renderMixin(Vue);
+  lifecycleMixin(Vue);
 
   return Vue;
 

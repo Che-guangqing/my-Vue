@@ -1,5 +1,6 @@
 import {initState} from './state'
 import {compileToFunction} from './compiler/index.js'
+import {mountComponent} from './lifecycle'
 
 // 在Vue构造函数的原型上添加初始化init方法
 export function initMixin(Vue) {
@@ -43,7 +44,9 @@ export function initMixin(Vue) {
         }
         // 传了render函数用传的，没传用if里面编译后的
         // options.render
-        console.log(options.render)
+
+        // 渲染当前的组件 挂在这个组件
+        mountComponent(vm, el)
     }
 }
 
