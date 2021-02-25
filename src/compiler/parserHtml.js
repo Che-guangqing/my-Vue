@@ -64,7 +64,7 @@ function end(tagName) {
     let element = stack.pop();
     // 标识当前这个p是属于这个div的儿子的
     currentParent = stack[stack.length-1]
-    if(currentParent) {
+    if(currentParent) { 
         // 有父级
         element.parent = currentParent;
         currentParent.children.push(element); //实现树的父子关系
