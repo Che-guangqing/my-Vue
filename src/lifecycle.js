@@ -1,5 +1,7 @@
+import Watcher from './observe/watcher'
+
 export function lifecycleMixin(Vue) {
-    Vue.protrotype._update = function (vnode) {
+    Vue.prototype._update = function (vnode) {
         // 拿到虚拟节点vnode，创建出真实dom 更新视图
     }
 }

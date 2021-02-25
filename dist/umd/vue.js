@@ -624,8 +624,12 @@
   */
   // 拼接字符串 + with + new Function
 
+  var Watcher = function Watcher() {
+    _classCallCheck(this, Watcher);
+  };
+
   function lifecycleMixin(Vue) {
-    Vue.protrotype._update = function (vnode) {// 拿到虚拟节点vnode，创建出真实dom 更新视图
+    Vue.prototype._update = function (vnode) {// 拿到虚拟节点vnode，创建出真实dom 更新视图
     };
   } // 挂载组件
 
@@ -706,8 +710,39 @@
   }
   */
 
+  function createElement(tag, data) {
+    var _console;
+
+    for (var _len = arguments.length, children = new Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+      children[_key - 2] = arguments[_key];
+    }
+
+    (_console = console).log.apply(_console, [tag, data].concat(children));
+  }
+  function createTextNode(text) {}
+
   function renderMixin(Vue) {
-    Vue.prototype._render = function () {};
+    // _c 创建元素的虚拟节点
+    // -v 创建文本的虚拟节点
+    // _s JSON.stringify
+    Vue.prototype._c = function () {
+      // tag,data,children1,children2
+      return createElement.apply(void 0, arguments);
+    };
+
+    Vue.prototype._v = function (text) {
+      return createTextNode();
+    };
+
+    Vue.prototype._s = function (val) {
+      return val == null ? '' : _typeof(val) === 'object' ? JSON.stringify(val) : val;
+    };
+
+    Vue.prototype._render = function () {
+      var vm = this;
+      var render = vm.$options.render;
+      render.call(vm); // 去实例上取值
+    };
   }
 
   function Vue(options) {
